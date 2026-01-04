@@ -1,0 +1,364 @@
+openapi: 3.0.3
+info:
+  title: GYDS Chain JSON-RPC API
+  description: |
+    JSON-RPC API for interacting with the GYDS Chain blockchain.
+    
+    ## Native Tokens
+    - **GYDS**: Utility and governance token
+    - **GYD**: Stablecoin pegged to USD
+    
+    ## Authentication
+    No authentication required for public endpoints.
+  version: 1.0.0
+  contact:
+    name: GYDS Chain Team
+    url: https://gydschain.io
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8545
+    description: Local node
+  - url: https://rpc.gydschain.io
+    description: Public RPC
+
+paths:
+  /:
+    post:
+      summary: JSON-RPC Endpoint
+      description: Send JSON-RPC requests to interact with the blockchain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcRequest'
+            examples:
+              getBlockHeight:
+                summary: Get block height
+                value:
+                  jsonrpc: "2.0"
+                  method: chain_getBlockHeight
+                  params: {}
+                  id: 1
+              getBalance:
+                summary: Get account balance
+                value:
+                  jsonrpc: "2.0"
+                  method: account_getBalance
+                  params:
+                    address: "gyds1abc123..."
+                    asset: "GYDS"
+                  id: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /health:
+    get:
+      summary: Health Check
+      responses:
+        '200':
+          description: Node is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+
+components:
+  schemas:
+    JsonRpcRequest:
+      type: object
+      required:
+        - jsonrpc
+        - method
+        - id
+      properties:
+        jsonrpc:
+          type: string
+          enum: ["2.0"]
+        method:
+          type: string
+          description: RPC method name
+        params:
+          type: object
+          description: Method parameters
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+
+    JsonRpcResponse:
+      type: object
+      required:
+        - jsonrpc
+        - id
+      properties:
+        jsonrpc:
+          type: string
+          enum: ["2.0"]
+        result:
+          description: Method result (if successful)
+        error:
+          $ref: '#/components/schemas/JsonRpcError'
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+
+    JsonRpcError:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          description: Additional error data
+
+    Block:
+      type: object
+      properties:
+        number:
+          type: integer
+          format: uint64
+        hash:
+          type: string
+        parentHash:
+          type: string
+        stateRoot:
+          type: string
+        transactionsRoot:
+          type: string
+        validator:
+          type: string
+        timestamp:
+          type: integer
+          format: uint64
+        gasUsed:
+          type: integer
+          format: uint64
+        gasLimit:
+          type: integer
+          format: uint64
+        transactions:
+          type: array
+          items:
+            type: string
+
+    Transaction:
+      type: object
+      properties:
+        hash:
+          type: string
+        nonce:
+          type: integer
+          format: uint64
+        blockNumber:
+          type: integer
+          format: uint64
+        from:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+        asset:
+          type: string
+        fee:
+          type: string
+        type:
+          type: string
+          enum:
+            - transfer
+            - stake
+            - unstake
+            - asset_create
+            - asset_mint
+            - asset_burn
+
+    Account:
+      type: object
+      properties:
+        address:
+          type: string
+        nonce:
+          type: integer
+          format: uint64
+        balances:
+          type: object
+          additionalProperties:
+            type: string
+
+    Validator:
+      type: object
+      properties:
+        address:
+          type: string
+        stake:
+          type: string
+        commission:
+          type: integer
+          description: Commission in basis points
+        active:
+          type: boolean
+        jailed:
+          type: boolean
+        blocksProposed:
+          type: integer
+          format: uint64
+        blocksSigned:
+          type: integer
+          format: uint64
+
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        decimals:
+          type: integer
+        totalSupply:
+          type: string
+        maxSupply:
+          type: string
+        mintable:
+          type: boolean
+        burnable:
+          type: boolean
+        isStablecoin:
+          type: boolean
+        pegTarget:
+          type: string
+
+  # RPC Methods Documentation
+  x-rpc-methods:
+    chain_getBlockByNumber:
+      description: Get block by number
+      params:
+        - name: number
+          type: uint64
+          required: true
+      returns: Block
+
+    chain_getBlockByHash:
+      description: Get block by hash
+      params:
+        - name: hash
+          type: string
+          required: true
+      returns: Block
+
+    chain_getLatestBlock:
+      description: Get the latest block
+      returns: Block
+
+    chain_getBlockHeight:
+      description: Get current block height
+      returns: uint64
+
+    chain_getChainInfo:
+      description: Get chain information
+      returns:
+        type: object
+        properties:
+          chainId: string
+          networkId: uint64
+          name: string
+
+    account_getBalance:
+      description: Get account balance
+      params:
+        - name: address
+          type: string
+          required: true
+        - name: asset
+          type: string
+          required: false
+          default: GYDS
+      returns: string
+
+    account_getNonce:
+      description: Get account nonce
+      params:
+        - name: address
+          type: string
+          required: true
+      returns: uint64
+
+    account_getAccount:
+      description: Get account details
+      params:
+        - name: address
+          type: string
+          required: true
+      returns: Account
+
+    tx_sendTransaction:
+      description: Send a signed transaction
+      params:
+        - name: signedTx
+          type: string
+          required: true
+      returns: string (transaction hash)
+
+    tx_getTransaction:
+      description: Get transaction by hash
+      params:
+        - name: hash
+          type: string
+          required: true
+      returns: Transaction
+
+    tx_estimateFee:
+      description: Estimate transaction fee
+      params:
+        - name: tx
+          type: object
+          required: true
+      returns: string
+
+    validator_getValidators:
+      description: Get all validators
+      returns: Validator[]
+
+    validator_stake:
+      description: Stake tokens
+      params:
+        - name: amount
+          type: string
+          required: true
+        - name: validator
+          type: string
+          required: true
+      returns: string (transaction hash)
+
+    asset_getAsset:
+      description: Get asset details
+      params:
+        - name: assetId
+          type: string
+          required: true
+      returns: Asset
+
+    net_getPeers:
+      description: Get connected peers
+      returns: Peer[]
+
+    mining_getWork:
+      description: Get mining work
+      returns: Work
