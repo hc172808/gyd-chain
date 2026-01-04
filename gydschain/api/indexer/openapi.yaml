@@ -1,0 +1,607 @@
+openapi: 3.0.3
+info:
+  title: GYDS Chain Indexer API
+  description: |
+    REST API for querying indexed blockchain data.
+    
+    This API provides fast access to:
+    - Block history
+    - Transaction history
+    - Account information
+    - Asset data
+    - Validator statistics
+  version: 1.0.0
+  contact:
+    name: GYDS Chain Team
+    url: https://gydschain.io
+
+servers:
+  - url: http://localhost:8080
+    description: Local indexer
+  - url: https://api.gydschain.io
+    description: Public API
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+
+  /status:
+    get:
+      summary: Indexer status
+      tags: [Health]
+      responses:
+        '200':
+          description: Indexer status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  last_indexed_block:
+                    type: integer
+
+  /blocks:
+    get:
+      summary: List blocks
+      tags: [Blocks]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of blocks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+
+  /blocks/{number}:
+    get:
+      summary: Get block by number
+      tags: [Blocks]
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Block details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+        '404':
+          description: Block not found
+
+  /blocks/{number}/transactions:
+    get:
+      summary: Get transactions in block
+      tags: [Blocks]
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+
+  /transactions:
+    get:
+      summary: List recent transactions
+      tags: [Transactions]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [transfer, stake, unstake, asset_create, asset_mint, asset_burn]
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+
+  /transactions/{hash}:
+    get:
+      summary: Get transaction by hash
+      tags: [Transactions]
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Transaction not found
+
+  /accounts/{address}:
+    get:
+      summary: Get account details
+      tags: [Accounts]
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          description: Account not found
+
+  /accounts/{address}/transactions:
+    get:
+      summary: Get account transactions
+      tags: [Accounts]
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Account transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+
+  /accounts/{address}/balance:
+    get:
+      summary: Get account balance
+      tags: [Accounts]
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: query
+          schema:
+            type: string
+            default: GYDS
+      responses:
+        '200':
+          description: Account balance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address:
+                    type: string
+                  asset:
+                    type: string
+                  balance:
+                    type: string
+
+  /assets:
+    get:
+      summary: List all assets
+      tags: [Assets]
+      responses:
+        '200':
+          description: List of assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+
+  /assets/{id}:
+    get:
+      summary: Get asset details
+      tags: [Assets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Asset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '404':
+          description: Asset not found
+
+  /assets/{id}/holders:
+    get:
+      summary: Get asset holders
+      tags: [Assets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Asset holders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                    balance:
+                      type: string
+
+  /assets/{id}/transfers:
+    get:
+      summary: Get asset transfers
+      tags: [Assets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Asset transfers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenTransfer'
+
+  /validators:
+    get:
+      summary: List validators
+      tags: [Validators]
+      responses:
+        '200':
+          description: List of validators
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Validator'
+
+  /validators/{address}:
+    get:
+      summary: Get validator details
+      tags: [Validators]
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Validator'
+        '404':
+          description: Validator not found
+
+  /stats:
+    get:
+      summary: Get chain statistics
+      tags: [Stats]
+      responses:
+        '200':
+          description: Chain statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+
+  /stats/daily:
+    get:
+      summary: Get daily statistics
+      tags: [Stats]
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        '200':
+          description: Daily statistics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    tx_count:
+                      type: integer
+                    total_value:
+                      type: string
+                    total_fees:
+                      type: string
+
+  /search:
+    get:
+      summary: Search blocks, transactions, accounts
+      tags: [Search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query:
+                    type: string
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [block, transaction, account, asset]
+                        id:
+                          type: string
+                        preview:
+                          type: object
+
+components:
+  schemas:
+    Block:
+      type: object
+      properties:
+        number:
+          type: integer
+        hash:
+          type: string
+        parent_hash:
+          type: string
+        state_root:
+          type: string
+        validator:
+          type: string
+        timestamp:
+          type: integer
+        gas_used:
+          type: integer
+        gas_limit:
+          type: integer
+        tx_count:
+          type: integer
+        size:
+          type: integer
+
+    Transaction:
+      type: object
+      properties:
+        hash:
+          type: string
+        block_number:
+          type: integer
+        block_hash:
+          type: string
+        tx_index:
+          type: integer
+        from:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+        asset:
+          type: string
+        fee:
+          type: string
+        nonce:
+          type: integer
+        type:
+          type: string
+        status:
+          type: string
+        timestamp:
+          type: integer
+
+    Account:
+      type: object
+      properties:
+        address:
+          type: string
+        nonce:
+          type: integer
+        tx_count:
+          type: integer
+        balances:
+          type: object
+          additionalProperties:
+            type: string
+        first_seen_block:
+          type: integer
+        last_seen_block:
+          type: integer
+
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        decimals:
+          type: integer
+        total_supply:
+          type: string
+        max_supply:
+          type: string
+        creator:
+          type: string
+        is_native:
+          type: boolean
+        is_stablecoin:
+          type: boolean
+        peg_target:
+          type: string
+        mintable:
+          type: boolean
+        burnable:
+          type: boolean
+
+    TokenTransfer:
+      type: object
+      properties:
+        tx_hash:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        amount:
+          type: string
+        block_number:
+          type: integer
+        created_at:
+          type: string
+
+    Validator:
+      type: object
+      properties:
+        address:
+          type: string
+        stake:
+          type: string
+        commission:
+          type: integer
+        active:
+          type: boolean
+        jailed:
+          type: boolean
+        blocks_proposed:
+          type: integer
+        blocks_signed:
+          type: integer
+        uptime_percentage:
+          type: number
+        delegator_count:
+          type: integer
+        total_delegations:
+          type: string
+
+    Stats:
+      type: object
+      properties:
+        last_block:
+          type: integer
+        total_transactions:
+          type: integer
+        total_accounts:
+          type: integer
+        total_validators:
+          type: integer
+        total_staked:
+          type: string
+        gyds_circulating:
+          type: string
+        gyd_circulating:
+          type: string
+        avg_block_time:
+          type: number
+        tps:
+          type: number
