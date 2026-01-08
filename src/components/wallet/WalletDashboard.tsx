@@ -99,7 +99,7 @@ export function WalletDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32">
       <div className="container mx-auto max-w-6xl px-4 py-6">
         <WalletHeader address={wallet.address} />
         
@@ -110,12 +110,17 @@ export function WalletDashboard() {
             onSend={handleSend}
           />
           
+          <TransactionHistory transactions={transactions} />
+        </div>
+      </div>
+
+      {/* Sticky Quick Actions at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t z-50">
+        <div className="container mx-auto max-w-6xl px-4 py-4">
           <QuickActions
             onSend={() => handleSend("GYDS")}
             onReceive={handleReceive}
           />
-          
-          <TransactionHistory transactions={transactions} />
         </div>
       </div>
 

@@ -1,6 +1,5 @@
 import { ArrowUpRight, ArrowDownLeft, RefreshCw, History, Landmark, Pickaxe } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface QuickActionsProps {
   onSend: () => void;
@@ -54,32 +53,22 @@ export function QuickActions({ onSend, onReceive }: QuickActionsProps) {
   ];
 
   return (
-    <Card className="border shadow-sm">
-      <CardContent className="p-6">
-        <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
-        <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
-          {actions.map((action) => (
-            <Button
-              key={action.label}
-              variant="outline"
-              className="flex h-auto flex-col gap-2 p-4 hover:shadow-md transition-all"
-              onClick={action.onClick}
-            >
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.gradient}`}
-              >
-                <action.icon className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium">{action.label}</p>
-                <p className="text-xs text-muted-foreground hidden md:block">
-                  {action.description}
-                </p>
-              </div>
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-3 gap-2 md:grid-cols-6 md:gap-3">
+      {actions.map((action) => (
+        <Button
+          key={action.label}
+          variant="outline"
+          className="flex h-auto flex-col gap-1.5 p-3 hover:shadow-md transition-all"
+          onClick={action.onClick}
+        >
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-xl ${action.gradient}`}
+          >
+            <action.icon className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <p className="text-xs font-medium">{action.label}</p>
+        </Button>
+      ))}
+    </div>
   );
 }
