@@ -4,49 +4,45 @@ import { Button } from "@/components/ui/button";
 interface QuickActionsProps {
   onSend: () => void;
   onReceive: () => void;
+  onStake: () => void;
+  onSwap: () => void;
 }
 
-export function QuickActions({ onSend, onReceive }: QuickActionsProps) {
+export function QuickActions({ onSend, onReceive, onStake, onSwap }: QuickActionsProps) {
   const actions = [
     {
       icon: ArrowUpRight,
       label: "Send",
-      description: "Transfer tokens",
       onClick: onSend,
       gradient: "gradient-gyds",
     },
     {
       icon: ArrowDownLeft,
       label: "Receive",
-      description: "Get your address",
       onClick: onReceive,
       gradient: "gradient-gyd",
     },
     {
       icon: RefreshCw,
       label: "Swap",
-      description: "Exchange tokens",
-      onClick: () => {},
-      gradient: "bg-secondary",
+      onClick: onSwap,
+      gradient: "bg-gradient-to-br from-blue-500 to-cyan-500",
     },
     {
       icon: Landmark,
       label: "Stake",
-      description: "Earn rewards",
-      onClick: () => {},
-      gradient: "bg-secondary",
+      onClick: onStake,
+      gradient: "bg-gradient-to-br from-orange-500 to-amber-500",
     },
     {
       icon: Pickaxe,
       label: "Mine",
-      description: "Earn GYDS",
       onClick: () => {},
       gradient: "bg-secondary",
     },
     {
       icon: History,
       label: "History",
-      description: "View all txns",
       onClick: () => {},
       gradient: "bg-secondary",
     },
