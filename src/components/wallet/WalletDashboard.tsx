@@ -5,6 +5,8 @@ import { QuickActions } from "./QuickActions";
 import { TransactionHistory } from "./TransactionHistory";
 import { SendModal } from "./SendModal";
 import { ReceiveModal } from "./ReceiveModal";
+import { StakingModal } from "./StakingModal";
+import { SwapModal } from "./SwapModal";
 
 export interface WalletData {
   address: string;
@@ -87,6 +89,8 @@ export function WalletDashboard() {
   const [transactions] = useState<Transaction[]>(mockTransactions);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const [stakingModalOpen, setStakingModalOpen] = useState(false);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<"GYDS" | "GYD">("GYDS");
 
   const handleSend = (token: "GYDS" | "GYD") => {
@@ -96,6 +100,14 @@ export function WalletDashboard() {
 
   const handleReceive = () => {
     setReceiveModalOpen(true);
+  };
+
+  const handleStake = () => {
+    setStakingModalOpen(true);
+  };
+
+  const handleSwap = () => {
+    setSwapModalOpen(true);
   };
 
   return (
@@ -120,6 +132,8 @@ export function WalletDashboard() {
           <QuickActions
             onSend={() => handleSend("GYDS")}
             onReceive={handleReceive}
+            onStake={handleStake}
+            onSwap={handleSwap}
           />
         </div>
       </div>
@@ -135,6 +149,19 @@ export function WalletDashboard() {
         open={receiveModalOpen}
         onOpenChange={setReceiveModalOpen}
         address={wallet.address}
+      />
+
+      <StakingModal
+        open={stakingModalOpen}
+        onOpenChange={setStakingModalOpen}
+        gydsBalance={wallet.gydsBalance}
+      />
+
+      <SwapModal
+        open={swapModalOpen}
+        onOpenChange={setSwapModalOpen}
+        gydsBalance={wallet.gydsBalance}
+        gydBalance={wallet.gydBalance}
       />
     </div>
   );
